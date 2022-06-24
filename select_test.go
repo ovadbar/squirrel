@@ -503,12 +503,12 @@ func TestSelectBuilderUnionToSql(t *testing.T) {
 	unionAll := Select("count(true) as C").
 		From("table1").
 		Where(Eq{"column1": []string{"test", "tester"}}).
-		UnionAllSelect(Select("count(true) as C").From("table2").Where(Select("true").Prefix("NOT EXISTS(").Suffix(")").From("table3").Where("id=table2.column3")))
+		UnionAllSelect(Select("count(true) as C").From("table2").Where(Select("true").Prefix("NOT EXISTS(").Suffix(")").From("table3").Where("id=table2.column3"))).OrderBy("C desc")
 	sql, args, err = unionAll.ToSql()
 	assert.NoError(t, err)
 
 	expectedSql = `SELECT count(true) as C FROM table1 WHERE column1 IN (?,?) ` +
-		"UNION ALL SELECT count(true) as C FROM table2 WHERE NOT EXISTS( SELECT true FROM table3 WHERE id=table2.column3 )"
+		"UNION ALL SELECT count(true) as C FROM table2 WHERE NOT EXISTS( SELECT true FROM table3 WHERE id=table2.column3 ) ORDER BY C desc"
 	assert.Equal(t, expectedSql, sql)
 
 	expectedArgs = []interface{}{"test", "tester"}
