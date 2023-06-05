@@ -150,7 +150,7 @@ func (d *insertData) appendSelectToSQL(w io.Writer, args []interface{}) ([]inter
 		return args, errors.New("select clause for insert statements are not set")
 	}
 
-	selectClause, sArgs, err := d.Select.ToSql()
+	selectClause, sArgs, err := d.Select.toSqlRaw()
 	if err != nil {
 		return args, err
 	}

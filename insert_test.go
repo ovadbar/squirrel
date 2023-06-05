@@ -6,6 +6,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPrefixSelect(t *testing.T) {
+	sel := Select().Column("?", 1).Column("?", 2).Column("prefix.id").From("prefix")
+
+	b := Insert("").
+		Prefix("WITH prefix AS (SELECT id = ? FROM table)", 3).
+		Into("a").Columns("one", "two", "three").
+		Select(sel)
+
+	sql, args, err := b.ToSql()
+	assert.NoError(t, err)
+
+	expectedSQL :=
+		"WITH prefix AS (SELECT id = ? FROM table) " +
+			"INSERT INTO a (one,two,three) SELECT ?, ?, prefix.id FROM prefix"
+	assert.Equal(t, expectedSQL, sql)
+
+	expectedArgs := []interface{}{3, 1, 2}
+	assert.Equal(t, expectedArgs, args)
+}
+
 func TestInsertBuilderToSql(t *testing.T) {
 	b := Insert("").
 		Prefix("WITH prefix AS ?", 0).
